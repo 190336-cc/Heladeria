@@ -1,122 +1,51 @@
 import { useState } from 'react'
-import heroImg from './assets/hero.png'
-import reactLogo from './assets/react.svg'
-import viteLogo from './assets/vite.svg'
+import InsumosPage from './pages/InsumosPage.jsx'
+import InventarioPage from './pages/InventarioPage.jsx'
+import ProductosPage from './pages/ProductosPage.jsx'
 import './App.css'
 
-function App() {
-  const [count, setCount] = useState(0)
+const SECCIONES = [
+  { id: 'inventario', etiqueta: '📦 Inventario' },
+  { id: 'insumos', etiqueta: '🧂 Insumos' },
+  { id: 'productos', etiqueta: '🍨 Productos' },
+]
+
+export default function App() {
+  const [seccion, setSeccion] = useState('inventario')
 
   return (
-    <>
-      <section id="center">
-        <div className="hero">
-          <img src={heroImg} className="base" width="170" height="179" alt="" />
-          <img src={reactLogo} className="framework" alt="React logo" />
-          <img src={viteLogo} className="vite" alt="Vite logo" />
+    <div className="app-layout">
+      <header className="app-header">
+        <div className="app-header-inner">
+          <div className="app-logo">
+            <span className="app-logo-icono">🍦</span>
+            <span className="app-logo-nombre">Helados del Valle</span>
+          </div>
+          <nav className="app-nav" aria-label="Navegación principal">
+            {SECCIONES.map((s) => (
+              <button
+                key={s.id}
+                type="button"
+                className={`nav-btn ${seccion === s.id ? 'nav-btn-activo' : ''}`}
+                onClick={() => setSeccion(s.id)}
+                aria-current={seccion === s.id ? 'page' : undefined}
+              >
+                {s.etiqueta}
+              </button>
+            ))}
+          </nav>
         </div>
-        <div>
-          <h1>Get started</h1>
-          <p>
-            Edit <code>src/App.jsx</code> and save to test <code>HMR</code>
-          </p>
-        </div>
-        <button
-          type="button"
-          className="counter"
-          onClick={() => setCount((count) => count + 1)}
-        >
-          Count is {count}
-        </button>
-      </section>
+      </header>
 
-      <div className="ticks"></div>
+      <main className="app-main">
+        {seccion === 'inventario' && <InventarioPage />}
+        {seccion === 'insumos' && <InsumosPage />}
+        {seccion === 'productos' && <ProductosPage />}
+      </main>
 
-      <section id="next-steps">
-        <div id="docs">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#documentation-icon"></use>
-          </svg>
-          <h2>Documentation</h2>
-          <p>Your questions, answered</p>
-          <ul>
-            <li>
-              <a href="https://vite.dev/" target="_blank">
-                <img className="logo" src={viteLogo} alt="" />
-                Explore Vite
-              </a>
-            </li>
-            <li>
-              <a href="https://react.dev/" target="_blank">
-                <img className="button-icon" src={reactLogo} alt="" />
-                Learn more
-              </a>
-            </li>
-          </ul>
-        </div>
-        <div id="social">
-          <svg className="icon" role="presentation" aria-hidden="true">
-            <use href="/icons.svg#social-icon"></use>
-          </svg>
-          <h2>Connect with us</h2>
-          <p>Join the Vite community</p>
-          <ul>
-            <li>
-              <a href="https://github.com/vitejs/vite" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#github-icon"></use>
-                </svg>
-                GitHub
-              </a>
-            </li>
-            <li>
-              <a href="https://chat.vite.dev/" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#discord-icon"></use>
-                </svg>
-                Discord
-              </a>
-            </li>
-            <li>
-              <a href="https://x.com/vite_js" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#x-icon"></use>
-                </svg>
-                X.com
-              </a>
-            </li>
-            <li>
-              <a href="https://bsky.app/profile/vite.dev" target="_blank">
-                <svg
-                  className="button-icon"
-                  role="presentation"
-                  aria-hidden="true"
-                >
-                  <use href="/icons.svg#bluesky-icon"></use>
-                </svg>
-                Bluesky
-              </a>
-            </li>
-          </ul>
-        </div>
-      </section>
-
-      <div className="ticks"></div>
-      <section id="spacer"></section>
-    </>
+      <footer className="app-footer">
+        <p>Helados del Valle — Sistema de gestión interno</p>
+      </footer>
+    </div>
   )
 }
-
-export default App
