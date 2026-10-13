@@ -1,7 +1,7 @@
 # Dependencias
 node_modules/
 
-# Variables de entorno y secretos
+# Variables de entorno
 .env
 .env.*
 *.local
