@@ -1,15 +1,12 @@
 import { useCallback, useEffect, useState } from 'react'
+import { ChevronRight, RotateCw } from 'lucide-react'
 import { insumosApi, inventarioApi } from '../services/api.js'
 import Alerta from '../components/Alerta.jsx'
 import AlertasInventario from '../components/AlertasInventario.jsx'
 import InventarioResumen from '../components/InventarioResumen.jsx'
 import MovimientoForm from '../components/MovimientoForm.jsx'
 import MovimientosTable from '../components/MovimientosTable.jsx'
-import Spinner from '../components/Spinner.jsx'
 
-/**
- * Página de inventario: resumen, alertas, formulario de movimiento e historial.
- */
 export default function InventarioPage() {
   const [resumen, setResumen] = useState(null)
   const [alertas, setAlertas] = useState(null)
@@ -20,61 +17,38 @@ export default function InventarioPage() {
   const [cargandoAlertas, setCargandoAlertas] = useState(true)
   const [cargandoMovimientos, setCargandoMovimientos] = useState(true)
   const [registrando, setRegistrando] = useState(false)
+  const [refrescando, setRefrescando] = useState(false)
 
-  const [error, setError] = useState(null)
+  const [errorGlobal, setErrorGlobal] = useState(null)
 
   // ---------------------------------------------------------------------------
-  // Carga de datos
+  // Carga y Refresco de Datos
   // ---------------------------------------------------------------------------
-  const cargarResumen = useCallback(async () => {
-    setCargandoResumen(true)
+  const refrescarTodo = useCallback(async () => {
+    setRefrescando(true)
+    setErrorGlobal(null)
+
     try {
-      const datos = await inventarioApi.resumen()
-      setResumen(datos.resumen)
+      const [resumenData, alertasData, movsData, insumosData] = await Promise.all([
+        inventarioApi.resumen(),
+        inventarioApi.alertas(),
+        inventarioApi.movimientos(),
+        insumosApi.listar(),
+      ])
+
+      setResumen(resumenData?.resumen ?? null)
+      setAlertas(alertasData?.alertas ?? [])
+      setMovimientos(Array.isArray(movsData) ? movsData : [])
+      setInsumos(Array.isArray(insumosData) ? insumosData : [])
     } catch (err) {
-      setError(err.message || 'No se pudo cargar el resumen.')
+      setErrorGlobal(err.message || 'Error al actualizar los datos de inventario.')
     } finally {
+      setRefrescando(false)
       setCargandoResumen(false)
-    }
-  }, [])
-
-  const cargarAlertas = useCallback(async () => {
-    setCargandoAlertas(true)
-    try {
-      const datos = await inventarioApi.alertas()
-      setAlertas(datos.alertas)
-    } catch (err) {
-      setError(err.message || 'No se pudo cargar las alertas.')
-    } finally {
       setCargandoAlertas(false)
-    }
-  }, [])
-
-  const cargarMovimientos = useCallback(async () => {
-    setCargandoMovimientos(true)
-    try {
-      const datos = await inventarioApi.movimientos()
-      setMovimientos(datos)
-    } catch (err) {
-      setError(err.message || 'No se pudo cargar el historial.')
-    } finally {
       setCargandoMovimientos(false)
     }
   }, [])
-
-  const cargarInsumos = useCallback(async () => {
-    try {
-      const datos = await insumosApi.listar()
-      setInsumos(datos)
-    } catch {
-      // silencioso, el error se muestra en InsumosPage si corresponde
-    }
-  }, [])
-
-  // Refresco completo del inventario tras un movimiento
-  const refrescarTodo = useCallback(() => {
-    return Promise.all([cargarResumen(), cargarAlertas(), cargarMovimientos(), cargarInsumos()])
-  }, [cargarResumen, cargarAlertas, cargarMovimientos, cargarInsumos])
 
   useEffect(() => {
     let cancelado = false
@@ -88,28 +62,24 @@ export default function InventarioPage() {
       if (cancelado) return
 
       if (resumenRes.status === 'fulfilled') {
-        setResumen(resumenRes.value.resumen)
+        setResumen(resumenRes.value?.resumen ?? null)
       } else {
-        setError(resumenRes.reason.message || 'No se pudo cargar el resumen.')
+        setErrorGlobal(resumenRes.reason?.message || 'No se pudo cargar el resumen.')
       }
       setCargandoResumen(false)
 
       if (alertasRes.status === 'fulfilled') {
-        setAlertas(alertasRes.value.alertas)
-      } else {
-        setError((prev) => prev || alertasRes.reason.message || 'No se pudo cargar las alertas.')
+        setAlertas(alertasRes.value?.alertas ?? [])
       }
       setCargandoAlertas(false)
 
       if (movsRes.status === 'fulfilled') {
-        setMovimientos(movsRes.value)
-      } else {
-        setError((prev) => prev || movsRes.reason.message || 'No se pudo cargar el historial.')
+        setMovimientos(Array.isArray(movsRes.value) ? movsRes.value : [])
       }
       setCargandoMovimientos(false)
 
       if (insumosRes.status === 'fulfilled') {
-        setInsumos(insumosRes.value)
+        setInsumos(Array.isArray(insumosRes.value) ? insumosRes.value : [])
       }
     })
 
@@ -119,90 +89,111 @@ export default function InventarioPage() {
   }, [])
 
   // ---------------------------------------------------------------------------
-  // Registrar movimiento
+  // Registro de Movimiento
   // ---------------------------------------------------------------------------
   async function handleRegistrar(payload) {
     setRegistrando(true)
-    setError(null)
+    setErrorGlobal(null)
     try {
-      const resultado = await inventarioApi.registrarMovimiento(payload)
-      // Solo refrescamos si el servidor confirma el movimiento
+      const respuesta = await inventarioApi.registrarMovimiento(payload)
+      // Refresco inmediato de KPIs, alertas, insumos e historial
       await refrescarTodo()
-      return resultado
+      return respuesta
     } finally {
       setRegistrando(false)
     }
-    // Si hay error, lanza y MovimientoForm lo captura y muestra
   }
 
-  // ---------------------------------------------------------------------------
-  // Render
-  // ---------------------------------------------------------------------------
   return (
-    <div className="pagina">
-      <div className="pagina-header">
-        <h2>Inventario</h2>
+    <div style={{ display: 'flex', flexDirection: 'column', gap: 20 }}>
+      {/* Breadcrumb */}
+      <div style={{ display: 'flex', alignItems: 'center', gap: 6, fontSize: 13, color: '#a8a29e' }}>
+        <span>Sistema</span>
+        <ChevronRight size={13} />
+        <span style={{ color: '#57534e', fontWeight: 500 }}>Inventario</span>
+      </div>
+
+      {/* Cabecera Principal */}
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'flex-start',
+          justifyContent: 'space-between',
+          flexWrap: 'wrap',
+          gap: 12,
+        }}
+      >
+        <div>
+          <h2
+            style={{
+              fontFamily: 'var(--font-display)',
+              fontSize: 28,
+              fontWeight: 700,
+              color: '#1c1917',
+              margin: 0,
+              letterSpacing: '-0.02em',
+            }}
+          >
+            Inventario y Movimientos
+          </h2>
+          <p style={{ fontSize: 13, color: '#78716c', marginTop: 4 }}>
+            Control de stock y registro de entradas, mermas y ajustes
+          </p>
+        </div>
+
         <button
           type="button"
-          className="btn btn-ghost btn-sm"
           onClick={refrescarTodo}
-          disabled={cargandoResumen || cargandoAlertas}
-          title="Actualizar datos"
+          disabled={refrescando || cargandoResumen}
+          style={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 6,
+            padding: '8px 14px',
+            borderRadius: 8,
+            border: '1px solid #e7e5e4',
+            background: '#ffffff',
+            color: '#57534e',
+            fontSize: 13,
+            fontWeight: 500,
+            cursor: refrescando ? 'not-allowed' : 'pointer',
+            transition: 'background 0.15s',
+          }}
+          title="Actualizar datos del inventario"
         >
-          ↻ Actualizar
+          <RotateCw size={14} className={refrescando ? 'animate-spin' : ''} />
+          {refrescando ? 'Actualizando...' : 'Actualizar'}
         </button>
       </div>
 
-      <Alerta mensaje={error} tipo="error" onCerrar={() => setError(null)} />
+      <Alerta mensaje={errorGlobal} tipo="error" onCerrar={() => setErrorGlobal(null)} />
 
-      {/* Resumen */}
-      <section className="seccion">
-        <h3 className="seccion-titulo">Resumen</h3>
-        {cargandoResumen ? (
-          <Spinner texto="Cargando resumen…" />
-        ) : (
-          <InventarioResumen resumen={resumen} cargando={cargandoResumen} />
-        )}
-      </section>
+      {/* 1. Tarjetas de Resumen (KPIs) */}
+      <InventarioResumen resumen={resumen} cargando={cargandoResumen} />
 
-      {/* Alertas */}
-      <section className="seccion">
-        <h3 className="seccion-titulo">
-          Alertas de stock
-          {alertas && alertas.length > 0 && (
-            <span className="badge badge-agotado badge-count">{alertas.length}</span>
-          )}
-        </h3>
-        {cargandoAlertas ? (
-          <Spinner texto="Cargando alertas…" />
-        ) : (
-          <AlertasInventario alertas={alertas} cargando={cargandoAlertas} />
-        )}
-      </section>
+      {/* 2. Alertas de Stock Mínimo */}
+      <AlertasInventario alertas={alertas} cargando={cargandoAlertas} />
 
-      {/* Formulario de movimiento */}
-      <section className="seccion">
-        <h3 className="seccion-titulo">Registrar movimiento</h3>
+      {/* 3. Cuadrícula de 2 columnas: Registro a la izquierda, Historial a la derecha */}
+      <div
+        style={{
+          display: 'grid',
+          gridTemplateColumns: 'repeat(auto-fit, minmax(360px, 1fr))',
+          gap: 20,
+          alignItems: 'start',
+        }}
+      >
         <MovimientoForm
           insumos={insumos}
           onRegistrar={handleRegistrar}
-          cargando={registrando}
+          cargando={registrando || refrescando}
         />
-      </section>
 
-      {/* Historial */}
-      <section className="seccion">
-        <h3 className="seccion-titulo">
-          Historial de movimientos
-          <span className="seccion-nota">(últimos 100)</span>
-        </h3>
-        {cargandoMovimientos ? (
-          <Spinner texto="Cargando historial…" />
-        ) : (
-          <MovimientosTable movimientos={movimientos} cargando={cargandoMovimientos} />
-        )}
-      </section>
+        <MovimientosTable
+          movimientos={movimientos}
+          cargando={cargandoMovimientos}
+        />
+      </div>
     </div>
   )
 }
-

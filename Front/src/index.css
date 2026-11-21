@@ -1,30 +1,26 @@
-/* index.css — Reset y variables base */
-:root {
-  --sans: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --heading: system-ui, 'Segoe UI', Roboto, sans-serif;
-  --mono: ui-monospace, Consolas, 'Courier New', monospace;
-  --text: #374151;
-  --text-h: #111827;
-  --bg: #f9fafb;
+/* index.css — Reset global + variables de diseño Helados del Valle */
 
-  font-family: var(--sans);
+:root {
+  --font-display: 'Playfair Display', Georgia, serif;
+  --font-body: 'Inter', system-ui, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Paleta identidad */
+  --color-sidebar: #3D2209;
+  --color-bg: #FAF7F2;
+  --color-amber: #E8A44A;
+  --color-brown: #6B3F1C;
+  --color-cream: #FFF8F2;
+
+  font-family: var(--font-body);
   font-size: 16px;
   line-height: 1.5;
-  color: var(--text);
-  background: var(--bg);
-  color-scheme: light dark;
+  color: #44403c;
+  background: var(--color-bg);
   font-synthesis: none;
   text-rendering: optimizeLegibility;
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-}
-
-@media (prefers-color-scheme: dark) {
-  :root {
-    --text: #d1d5db;
-    --text-h: #f9fafb;
-    --bg: #0f172a;
-  }
 }
 
 *,
@@ -35,26 +31,170 @@
 
 body {
   margin: 0;
-  background: var(--bg);
+  background: var(--color-bg);
 }
 
 #root {
-  /* App.css maneja el layout; aquí solo reseteamos el starter de Vite */
   width: 100%;
   max-width: 100%;
   margin: 0;
-  text-align: left;
-  border: none;
   min-height: 100svh;
 }
 
 h1, h2, h3, h4, h5, h6 {
-  font-family: var(--heading);
-  color: var(--text-h);
-  font-weight: 600;
   margin: 0;
+  font-weight: 600;
 }
 
 p { margin: 0; }
+button { font-family: inherit; cursor: pointer; }
+input, select, textarea { font-family: inherit; }
 
-button { font-family: inherit; }
+/* Scrollbar delgada */
+* {
+  scrollbar-width: thin;
+  scrollbar-color: #e0d5c8 transparent;
+}
+
+/* ── Utilidades compartidas ─────────────────────────────────── */
+
+.font-display { font-family: var(--font-display); }
+.font-mono    { font-family: var(--font-mono); }
+
+/* Usadas por componentes pre-existentes (Alerta, Spinner, etc.) */
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 8px 16px;
+  font-size: 0.875rem;
+  font-weight: 500;
+  border-radius: 8px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s, opacity 0.15s;
+}
+.btn:disabled { opacity: 0.45; cursor: not-allowed; }
+
+.btn-primario {
+  background: var(--color-brown);
+  color: var(--color-cream);
+}
+.btn-primario:hover:not(:disabled) { background: #562f12; }
+
+.btn-ghost {
+  background: transparent;
+  color: #57534e;
+}
+.btn-ghost:hover:not(:disabled) { background: #f5f5f4; }
+
+.btn-sm { padding: 5px 10px; font-size: 0.8rem; }
+
+/* Panel de formulario flotante (InsumosPage, ProductosPage) */
+.form-panel {
+  background: white;
+  border: 1px solid #e7e5e4;
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,0.06);
+}
+
+/* Contenedor de página dentro del layout */
+.pagina {
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.pagina-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.pagina-header h2 {
+  font-family: var(--font-display);
+  font-size: 1.5rem;
+  color: #1c1917;
+}
+
+.seccion { display: flex; flex-direction: column; gap: 12px; }
+
+.seccion-titulo {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: #44403c;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.seccion-nota {
+  font-size: 0.75rem;
+  font-weight: 400;
+  color: #a8a29e;
+}
+
+/* Filtros barra */
+.filtros-barra {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 10px;
+}
+
+.filtro-busqueda {
+  flex: 1;
+  min-width: 180px;
+  padding: 7px 12px;
+  border: 1px solid #d6d3d1;
+  border-radius: 8px;
+  font-size: 0.875rem;
+  background: white;
+  outline: none;
+  transition: border-color 0.15s;
+}
+.filtro-busqueda:focus { border-color: var(--color-brown); }
+
+.filtro-grupo {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.filtro-label {
+  font-size: 0.8rem;
+  color: #78716c;
+  white-space: nowrap;
+}
+
+.filtro-contador {
+  font-size: 0.8rem;
+  color: #a8a29e;
+  margin-left: auto;
+}
+
+/* Badge genérico */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 2px 8px;
+  border-radius: 999px;
+  font-size: 0.72rem;
+  font-weight: 600;
+}
+
+.badge-agotado { background: #fee2e2; color: #dc2626; }
+.badge-bajo    { background: #fef3c7; color: #d97706; }
+.badge-ok      { background: #d1fae5; color: #059669; }
+
+.badge-count {
+  min-width: 20px;
+  height: 20px;
+  border-radius: 999px;
+  padding: 0 6px;
+  font-size: 0.7rem;
+}

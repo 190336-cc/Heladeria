@@ -53,6 +53,7 @@ CREATE TABLE IF NOT EXISTS productos (
     nombre          VARCHAR(120) NOT NULL,
     descripcion     TEXT,
     precio_venta    NUMERIC(12,2) NOT NULL,
+    receta_nombre   VARCHAR(150),
     activo          BOOLEAN NOT NULL DEFAULT TRUE,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),

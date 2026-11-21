@@ -41,6 +41,7 @@ router.get("/", async (req, res) => {
         p.descripcion,
         p.precio_venta,
         p.precio_venta AS precio,
+        p.receta_nombre,
         p.activo,
         CASE WHEN p.activo THEN 'activo' ELSE 'inactivo' END AS estado,
         p.created_at,
@@ -398,7 +399,7 @@ router.get("/:id/receta", async (req, res) => {
   try {
     // Verificar que el producto existe
     const producto = await pool.query(
-      "SELECT id, nombre FROM productos WHERE id = $1",
+      "SELECT id, nombre, receta_nombre FROM productos WHERE id = $1",
       [id]
     );
 
@@ -435,6 +436,7 @@ router.get("/:id/receta", async (req, res) => {
     res.json({
       producto_id: Number(id),
       producto: producto.rows[0].nombre,
+      receta_nombre: producto.rows[0].receta_nombre || null,
       insumos: receta.rows,
       costo_receta_estimado: costoTotal.rows[0].costo_total,
       nota: "El costo es una estimación basada en los costos unitarios actuales de cada insumo; no representa el costo histórico de producción.",
@@ -456,6 +458,7 @@ router.get("/:id/receta", async (req, res) => {
 router.put("/:id/receta", async (req, res) => {
   const { id } = req.params;
   const { insumos } = req.body;
+  const nombreReceta = req.body.receta_nombre !== undefined ? req.body.receta_nombre : req.body.nombre;
 
   if (!esIdValido(id)) {
     return res.status(400).json({ message: "El ID debe ser un número válido" });
@@ -508,13 +511,24 @@ router.put("/:id/receta", async (req, res) => {
 
     // 1. Verificar que el producto existe (con bloqueo para evitar condiciones de carrera)
     const producto = await client.query(
-      "SELECT id, nombre FROM productos WHERE id = $1 FOR UPDATE",
+      "SELECT id, nombre, receta_nombre FROM productos WHERE id = $1 FOR UPDATE",
       [id]
     );
 
     if (producto.rows.length === 0) {
       await client.query("ROLLBACK");
       return res.status(404).json({ message: "Producto no encontrado" });
+    }
+
+    // Actualizar nombre de la receta si fue provisto
+    let recetaNombreFinal = producto.rows[0].receta_nombre;
+    if (nombreReceta !== undefined) {
+      const limpio = typeof nombreReceta === "string" && nombreReceta.trim() ? nombreReceta.trim() : null;
+      await client.query(
+        "UPDATE productos SET receta_nombre = $1, updated_at = NOW() WHERE id = $2",
+        [limpio, id]
+      );
+      recetaNombreFinal = limpio;
     }
 
     // 2. Verificar que todos los insumos indicados existen y están activos
@@ -599,6 +613,7 @@ router.put("/:id/receta", async (req, res) => {
       message: "Receta actualizada correctamente",
       producto_id: Number(id),
       producto: producto.rows[0].nombre,
+      receta_nombre: recetaNombreFinal || null,
       insumos: recetaFinal.rows,
       costo_receta_estimado: costoTotal.rows[0].costo_total,
       nota: "El costo es una estimación basada en los costos unitarios actuales de cada insumo; no representa el costo histórico de producción.",

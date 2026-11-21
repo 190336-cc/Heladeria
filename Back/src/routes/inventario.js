@@ -17,10 +17,11 @@ const tiposPermitidos = [
 // Registrar una entrada, merma o ajuste
 router.post("/movimientos", async (req, res) => {
   const { insumo_id, usuario_id, tipo, cantidad, motivo } = req.body;
+  const finalUsuarioId = usuario_id ?? 1;
 
   if (
     !/^\d+$/.test(String(insumo_id ?? "")) ||
-    !/^\d+$/.test(String(usuario_id ?? "")) ||
+    !/^\d+$/.test(String(finalUsuarioId ?? "")) ||
     !tiposPermitidos.includes(tipo)
   ) {
     return res.status(400).json({
@@ -123,7 +124,7 @@ router.post("/movimientos", async (req, res) => {
        RETURNING *`,
       [
         insumo_id,
-        usuario_id,
+        finalUsuarioId,
         tipo,
         String(cantidad),
         motivo.trim(),
@@ -175,15 +176,17 @@ router.get("/movimientos", async (req, res) => {
         m.id,
         m.insumo_id,
         i.nombre AS insumo,
+        i.unidad_medida,
         m.usuario_id,
         u.nombre AS usuario,
+        m.venta_id,
         m.tipo,
         m.cantidad,
         m.motivo,
         m.created_at
       FROM movimientos_inventario m
       INNER JOIN insumos i ON i.id = m.insumo_id
-      INNER JOIN usuarios u ON u.id = m.usuario_id
+      LEFT JOIN usuarios u ON u.id = m.usuario_id
       ORDER BY m.created_at DESC, m.id DESC
       LIMIT 100
     `);

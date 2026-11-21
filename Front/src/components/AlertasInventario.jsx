@@ -1,54 +1,132 @@
-/**
- * Lista de insumos con stock igual o por debajo del mínimo.
- *
- * Props:
- *   alertas  – array { id, nombre, unidad_medida, stock_actual, stock_minimo, alerta }
- *   cargando – boolean
- */
+import { AlertTriangle, CheckCircle2 } from 'lucide-react'
+
 export default function AlertasInventario({ alertas, cargando }) {
-  if (cargando) return <p className="texto-cargando">Cargando alertas…</p>
-  if (!alertas) return null
-
-  const fmt = new Intl.NumberFormat('es-MX', { minimumFractionDigits: 3 })
-
-  if (alertas.length === 0) {
-    return (
-      <div className="alertas-vacio">
-        <span className="alertas-check">✓</span>
-        <p>Todos los insumos tienen stock suficiente.</p>
-      </div>
-    )
+  if (cargando && !alertas) {
+    return null
   }
 
+  const fmtStock = new Intl.NumberFormat('es-MX', {
+    minimumFractionDigits: 2,
+    maximumFractionDigits: 3,
+  })
+
+  const listaAlertas = Array.isArray(alertas) ? alertas : []
+
   return (
-    <div className="tabla-wrap">
-      <table className="tabla">
-        <thead>
-          <tr>
-            <th>Insumo</th>
-            <th>Unidad</th>
-            <th className="texto-derecha">Stock actual</th>
-            <th className="texto-derecha">Stock mínimo</th>
-            <th>Alerta</th>
-          </tr>
-        </thead>
-        <tbody>
-          {alertas.map((a) => (
-            <tr key={a.id}>
-              <td>{a.nombre}</td>
-              <td>{a.unidad_medida}</td>
-              <td className="texto-derecha num">{fmt.format(Number(a.stock_actual))}</td>
-              <td className="texto-derecha num">{fmt.format(Number(a.stock_minimo))}</td>
-              <td>
-                <span className={`badge ${a.alerta === 'AGOTADO' ? 'badge-agotado' : 'badge-bajo'}`}>
-                  {a.alerta === 'AGOTADO' ? 'Agotado' : 'Stock bajo'}
+    <div
+      style={{
+        background: '#fffdf5',
+        border: '1px solid #fef08a',
+        borderRadius: 12,
+        padding: '16px 20px',
+        boxShadow: '0 1px 3px rgba(0, 0, 0, 0.02)',
+      }}
+    >
+      <div
+        style={{
+          display: 'flex',
+          alignItems: 'center',
+          gap: 8,
+          marginBottom: listaAlertas.length > 0 ? 12 : 0,
+        }}
+      >
+        <AlertTriangle size={17} color="#d97706" />
+        <h4
+          style={{
+            margin: 0,
+            fontSize: 14,
+            fontWeight: 700,
+            color: '#854d0e',
+          }}
+        >
+          Alertas de stock mínimo ({listaAlertas.length})
+        </h4>
+      </div>
+
+      {listaAlertas.length === 0 ? (
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'center',
+            gap: 8,
+            color: '#065f46',
+            fontSize: 13,
+            fontWeight: 500,
+            padding: '4px 0',
+          }}
+        >
+          <CheckCircle2 size={16} color="#059669" />
+          <span>Todos los insumos activos cuentan con stock suficiente por encima de su umbral mínimo.</span>
+        </div>
+      ) : (
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fill, minmax(260px, 1fr))',
+            gap: 12,
+          }}
+        >
+          {listaAlertas.map((a) => {
+            const esAgotado = a.alerta === 'AGOTADO' || Number(a.stock_actual || 0) <= 0
+            return (
+              <div
+                key={a.id}
+                style={{
+                  background: '#ffffff',
+                  border: `1px solid ${esAgotado ? '#fecaca' : '#fed7aa'}`,
+                  borderRadius: 10,
+                  padding: '12px 14px',
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'space-between',
+                  gap: 10,
+                  boxShadow: '0 1px 2px rgba(0,0,0,0.03)',
+                }}
+              >
+                <div>
+                  <span
+                    style={{
+                      display: 'block',
+                      fontSize: 13,
+                      fontWeight: 600,
+                      color: '#1c1917',
+                    }}
+                  >
+                    {a.nombre}
+                  </span>
+                  <span
+                    style={{
+                      display: 'block',
+                      fontFamily: 'var(--font-mono)',
+                      fontSize: 12,
+                      color: '#78716c',
+                      marginTop: 2,
+                    }}
+                  >
+                    {fmtStock.format(Number(a.stock_actual || 0))} / {fmtStock.format(Number(a.stock_minimo || 0))} {a.unidad_medida}
+                  </span>
+                </div>
+
+                <span
+                  style={{
+                    padding: '3px 9px',
+                    borderRadius: 6,
+                    fontSize: 11,
+                    fontWeight: 600,
+                    letterSpacing: '0.02em',
+                    whiteSpace: 'nowrap',
+                    background: esAgotado ? '#fee2e2' : '#fef3c7',
+                    color: esAgotado ? '#dc2626' : '#d97706',
+                    border: `1px solid ${esAgotado ? '#fca5a5' : '#fcd34d'}`,
+                  }}
+                >
+                  {esAgotado ? 'Agotado' : 'Stock bajo'}
                 </span>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+              </div>
+            )
+          })}
+        </div>
+      )}
     </div>
   )
 }
-

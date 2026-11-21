@@ -120,3 +120,85 @@ export const productosApi = {
     }),
 }
 
+// ---------------------------------------------------------------------------
+// Recetas
+// ---------------------------------------------------------------------------
+
+export const recetasApi = {
+  obtener: (productoId) => request(`/productos/${productoId}/receta`),
+
+  actualizar: (productoId, payloadOrInsumos, recetaNombre) => {
+    const body = Array.isArray(payloadOrInsumos)
+      ? { insumos: payloadOrInsumos, receta_nombre: recetaNombre }
+      : payloadOrInsumos
+    return request(`/productos/${productoId}/receta`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    })
+  },
+}
+
+// ---------------------------------------------------------------------------
+// Ventas / POS
+// ---------------------------------------------------------------------------
+
+export const ventasApi = {
+  listar: (params = {}) => {
+    const query = new URLSearchParams()
+    if (params.limite) query.set('limite', params.limite)
+    if (params.evento_id) query.set('evento_id', params.evento_id)
+    const qs = query.toString()
+    return request(`/ventas${qs ? `?${qs}` : ''}`)
+  },
+
+  obtener: (id) => request(`/ventas/${id}`),
+
+  crear: (body) =>
+    request('/ventas', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+}
+
+// ---------------------------------------------------------------------------
+// Eventos
+// ---------------------------------------------------------------------------
+
+export const eventosApi = {
+  listar: (params = {}) => {
+    const query = new URLSearchParams()
+    if (params.vigentes) query.set('vigentes', 'true')
+    const qs = query.toString()
+    return request(`/eventos${qs ? `?${qs}` : ''}`)
+  },
+
+  obtener: (id) => request(`/eventos/${id}`),
+
+  tipos: () => request('/eventos/tipos'),
+
+  crear: (body) =>
+    request('/eventos', {
+      method: 'POST',
+      body: JSON.stringify(body),
+    }),
+
+  editar: (id, body) =>
+    request(`/eventos/${id}`, {
+      method: 'PUT',
+      body: JSON.stringify(body),
+    }),
+
+  cambiarEstado: (id, estado) =>
+    request(`/eventos/${id}/estado`, {
+      method: 'PATCH',
+      body: JSON.stringify({ estado }),
+    }),
+}
+
+// ---------------------------------------------------------------------------
+// Dashboard
+// ---------------------------------------------------------------------------
+
+export const dashboardApi = {
+  resumen: () => request('/dashboard/resumen'),
+}

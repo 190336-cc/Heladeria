@@ -1,60 +1,106 @@
-/**
- * Tarjetas con el resumen general del inventario.
- * Los valores NUMERIC de PostgreSQL llegan como strings → se convierten a Number.
- *
- * Props:
- *   resumen – objeto { total_insumos, agotados, stock_bajo, stock_suficiente, valor_inventario }
- *   cargando – boolean
- */
 export default function InventarioResumen({ resumen, cargando }) {
-  if (cargando) {
-    return <p className="texto-cargando">Cargando resumen…</p>
+  if (cargando && !resumen) {
+    return (
+      <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 14 }}>
+        {[1, 2, 3, 4, 5].map((i) => (
+          <div
+            key={i}
+            style={{
+              background: '#ffffff',
+              borderRadius: 12,
+              border: '1px solid #e7e5e4',
+              padding: '18px 20px',
+              height: 78,
+              boxSizing: 'border-box',
+            }}
+          />
+        ))}
+      </div>
+    )
   }
-  if (!resumen) return null
 
   const fmtMoneda = new Intl.NumberFormat('es-MX', {
     style: 'currency',
     currency: 'MXN',
     minimumFractionDigits: 2,
+    maximumFractionDigits: 2,
   })
 
-  const tarjetas = [
+  const cards = [
     {
-      etiqueta: 'Total insumos activos',
-      valor: Number(resumen.total_insumos),
-      clase: 'tarjeta-neutral',
+      etiqueta: 'TOTAL INSUMOS',
+      valor: Number(resumen?.total_insumos || 0),
+      color: '#1c1917',
     },
     {
-      etiqueta: 'Agotados',
-      valor: Number(resumen.agotados),
-      clase: Number(resumen.agotados) > 0 ? 'tarjeta-peligro' : 'tarjeta-ok',
+      etiqueta: 'AGOTADOS',
+      valor: Number(resumen?.agotados || 0),
+      color: '#dc2626',
     },
     {
-      etiqueta: 'Stock bajo',
-      valor: Number(resumen.stock_bajo),
-      clase: Number(resumen.stock_bajo) > 0 ? 'tarjeta-advertencia' : 'tarjeta-ok',
+      etiqueta: 'STOCK BAJO',
+      valor: Number(resumen?.stock_bajo || 0),
+      color: '#d97706',
     },
     {
-      etiqueta: 'Stock suficiente',
-      valor: Number(resumen.stock_suficiente),
-      clase: 'tarjeta-ok',
+      etiqueta: 'SUFICIENTE',
+      valor: Number(resumen?.stock_suficiente || 0),
+      color: '#059669',
     },
     {
-      etiqueta: 'Valor estimado',
-      valor: fmtMoneda.format(Number(resumen.valor_inventario)),
-      clase: 'tarjeta-neutral',
+      etiqueta: 'VALOR ESTIMADO',
+      valor: fmtMoneda.format(Number(resumen?.valor_inventario || 0)),
+      color: '#1c1917',
+      isMono: true,
     },
   ]
 
   return (
-    <div className="resumen-grid">
-      {tarjetas.map((t) => (
-        <div key={t.etiqueta} className={`tarjeta-resumen ${t.clase}`}>
-          <span className="tarjeta-valor">{t.valor}</span>
-          <span className="tarjeta-etiqueta">{t.etiqueta}</span>
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: 'repeat(auto-fit, minmax(170px, 1fr))',
+        gap: 14,
+      }}
+    >
+      {cards.map((c) => (
+        <div
+          key={c.etiqueta}
+          style={{
+            background: '#ffffff',
+            borderRadius: 12,
+            border: '1px solid #e7e5e4',
+            padding: '16px 20px',
+            boxShadow: '0 1px 3px rgba(0, 0, 0, 0.04)',
+            display: 'flex',
+            flexDirection: 'column',
+            justifyContent: 'center',
+            gap: 6,
+          }}
+        >
+          <span
+            style={{
+              fontSize: 11,
+              fontWeight: 700,
+              color: '#78716c',
+              letterSpacing: '0.05em',
+            }}
+          >
+            {c.etiqueta}
+          </span>
+          <span
+            style={{
+              fontSize: c.isMono ? 22 : 28,
+              fontWeight: 700,
+              color: c.color,
+              fontFamily: c.isMono ? 'var(--font-mono)' : 'inherit',
+              lineHeight: 1.1,
+            }}
+          >
+            {c.valor}
+          </span>
         </div>
       ))}
     </div>
   )
 }
-

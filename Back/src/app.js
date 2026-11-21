@@ -1,10 +1,13 @@
-
 const express = require("express");
 const cors = require("cors");
 const pool = require("./db");
 const insumosRoutes = require("./routes/insumos");
 const inventarioRoutes = require("./routes/inventario");
 const productosRoutes = require("./routes/productos");
+const ventasRoutes = require("./routes/ventas");
+const eventosRoutes = require("./routes/eventos");
+const dashboardRoutes = require("./routes/dashboard");
+
 const app = express();
 
 app.use(cors());
@@ -13,6 +16,9 @@ app.use(express.json());
 app.use("/api/insumos", insumosRoutes);
 app.use("/api/inventario", inventarioRoutes);
 app.use("/api/productos", productosRoutes);
+app.use("/api/ventas", ventasRoutes);
+app.use("/api/eventos", eventosRoutes);
+app.use("/api/dashboard", dashboardRoutes);
 
 app.get("/api/health", (req, res) => {
   res.json({

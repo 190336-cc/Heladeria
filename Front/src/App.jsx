@@ -1,51 +1,43 @@
-import { useState } from 'react'
+/**
+ * App.jsx — Punto de entrada con sidebar layout.
+ * Reemplaza la navegación por pestañas con la barra lateral de Figma.
+ */
+import { useEffect, useState } from 'react'
+import Layout from './components/Layout.jsx'
+import DashboardPage from './pages/DashboardPage.jsx'
 import InsumosPage from './pages/InsumosPage.jsx'
 import InventarioPage from './pages/InventarioPage.jsx'
 import ProductosPage from './pages/ProductosPage.jsx'
-import './App.css'
-
-const SECCIONES = [
-  { id: 'inventario', etiqueta: '📦 Inventario' },
-  { id: 'insumos', etiqueta: '🧂 Insumos' },
-  { id: 'productos', etiqueta: '🍨 Productos' },
-]
+import RecetasPage from './pages/RecetasPage.jsx'
+import VentasPage from './pages/VentasPage.jsx'
+import EventosPage from './pages/EventosPage.jsx'
+import { inventarioApi } from './services/api.js'
+import './index.css'
 
 export default function App() {
-  const [seccion, setSeccion] = useState('inventario')
+  const [seccion, setSeccion] = useState('dashboard')
+  const [alertasCount, setAlertasCount] = useState(0)
+
+  // Cargamos el número de alertas una vez para el badge del topbar
+  useEffect(() => {
+    let cancelado = false
+    inventarioApi.alertas()
+      .then((data) => {
+        if (!cancelado) setAlertasCount((data.alertas || []).length)
+      })
+      .catch(() => {})
+    return () => { cancelado = true }
+  }, [])
 
   return (
-    <div className="app-layout">
-      <header className="app-header">
-        <div className="app-header-inner">
-          <div className="app-logo">
-            <span className="app-logo-icono">🍦</span>
-            <span className="app-logo-nombre">Helados del Valle</span>
-          </div>
-          <nav className="app-nav" aria-label="Navegación principal">
-            {SECCIONES.map((s) => (
-              <button
-                key={s.id}
-                type="button"
-                className={`nav-btn ${seccion === s.id ? 'nav-btn-activo' : ''}`}
-                onClick={() => setSeccion(s.id)}
-                aria-current={seccion === s.id ? 'page' : undefined}
-              >
-                {s.etiqueta}
-              </button>
-            ))}
-          </nav>
-        </div>
-      </header>
-
-      <main className="app-main">
-        {seccion === 'inventario' && <InventarioPage />}
-        {seccion === 'insumos' && <InsumosPage />}
-        {seccion === 'productos' && <ProductosPage />}
-      </main>
-
-      <footer className="app-footer">
-        <p>Helados del Valle — Sistema de gestión interno</p>
-      </footer>
-    </div>
+    <Layout seccion={seccion} onNavegar={setSeccion} alertasCount={alertasCount}>
+      {seccion === 'dashboard'  && <DashboardPage />}
+      {seccion === 'insumos'    && <InsumosPage />}
+      {seccion === 'inventario' && <InventarioPage />}
+      {seccion === 'productos'  && <ProductosPage />}
+      {seccion === 'recetas'    && <RecetasPage />}
+      {seccion === 'ventas'     && <VentasPage />}
+      {seccion === 'eventos'    && <EventosPage />}
+    </Layout>
   )
 }
