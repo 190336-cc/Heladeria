@@ -42,6 +42,8 @@ router.get("/", async (req, res) => {
         p.precio_venta,
         p.precio_venta AS precio,
         p.receta_nombre,
+        COALESCE(p.categoria, 'Helados') AS categoria,
+        COALESCE(p.emoji, '🍦') AS emoji,
         p.activo,
         CASE WHEN p.activo THEN 'activo' ELSE 'inactivo' END AS estado,
         p.created_at,
@@ -102,6 +104,9 @@ router.get("/:id", async (req, res) => {
          p.descripcion,
          p.precio_venta,
          p.precio_venta AS precio,
+         p.receta_nombre,
+         COALESCE(p.categoria, 'Helados') AS categoria,
+         COALESCE(p.emoji, '🍦') AS emoji,
          p.activo,
          CASE WHEN p.activo THEN 'activo' ELSE 'inactivo' END AS estado,
          p.created_at,
@@ -142,8 +147,11 @@ router.get("/:id", async (req, res) => {
 // Acepta precio_venta o precio
 // ---------------------------------------------------------------------------
 router.post("/", async (req, res) => {
-  const { nombre, descripcion } = req.body;
+  const { nombre, descripcion, categoria, emoji } = req.body;
   const precioValor = req.body.precio_venta !== undefined ? req.body.precio_venta : req.body.precio;
+  const activoValor = typeof req.body.activo === "boolean" ? req.body.activo : (req.body.activo !== undefined ? req.body.activo === "true" : true);
+  const categoriaValor = typeof categoria === "string" && categoria.trim() ? categoria.trim() : "Helados";
+  const emojiValor = typeof emoji === "string" && emoji.trim() ? emoji.trim() : "🍦";
 
   if (typeof nombre !== "string" || !nombre.trim()) {
     return res.status(400).json({ success: false, message: "El nombre es obligatorio" });
@@ -174,10 +182,10 @@ router.post("/", async (req, res) => {
 
   try {
     const resultado = await pool.query(
-      `INSERT INTO productos (nombre, descripcion, precio_venta, activo, created_at, updated_at)
-       VALUES ($1, $2, $3::numeric, TRUE, NOW(), NOW())
+      `INSERT INTO productos (nombre, descripcion, precio_venta, categoria, emoji, activo, created_at, updated_at)
+       VALUES ($1, $2, $3::numeric, $4, $5, $6, NOW(), NOW())
        RETURNING *`,
-      [nombre.trim(), descripcion?.trim() || null, String(precioValor)]
+      [nombre.trim(), descripcion?.trim() || null, String(precioValor), categoriaValor, emojiValor, activoValor]
     );
 
     const fila = resultado.rows[0];
@@ -220,8 +228,11 @@ router.post("/", async (req, res) => {
 // ---------------------------------------------------------------------------
 router.put("/:id", async (req, res) => {
   const { id } = req.params;
-  const { nombre, descripcion } = req.body;
+  const { nombre, descripcion, categoria, emoji } = req.body;
   const precioValor = req.body.precio_venta !== undefined ? req.body.precio_venta : req.body.precio;
+  const activoValor = typeof req.body.activo === "boolean" ? req.body.activo : (req.body.activo !== undefined ? req.body.activo === "true" : null);
+  const categoriaValor = typeof categoria === "string" && categoria.trim() ? categoria.trim() : null;
+  const emojiValor = typeof emoji === "string" && emoji.trim() ? emoji.trim() : null;
 
   if (!esIdValido(id)) {
     return res.status(400).json({ success: false, message: "El ID debe ser un número válido" });
@@ -257,10 +268,13 @@ router.put("/:id", async (req, res) => {
        SET nombre = $1,
            descripcion = $2,
            precio_venta = $3::numeric,
+           categoria = COALESCE($4, categoria, 'Helados'),
+           emoji = COALESCE($5, emoji, '🍦'),
+           activo = COALESCE($6, activo),
            updated_at = NOW()
-       WHERE id = $4
+       WHERE id = $7
        RETURNING *`,
-      [nombre.trim(), descripcion?.trim() || null, String(precioValor), id]
+      [nombre.trim(), descripcion?.trim() || null, String(precioValor), categoriaValor, emojiValor, activoValor, id]
     );
 
     if (resultado.rows.length === 0) {

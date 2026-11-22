@@ -54,6 +54,8 @@ CREATE TABLE IF NOT EXISTS productos (
     descripcion     TEXT,
     precio_venta    NUMERIC(12,2) NOT NULL,
     receta_nombre   VARCHAR(150),
+    categoria       VARCHAR(50) NOT NULL DEFAULT 'Helados',
+    emoji           VARCHAR(20) NOT NULL DEFAULT '🍦',
     activo          BOOLEAN NOT NULL DEFAULT TRUE,
     created_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
     updated_at      TIMESTAMPTZ NOT NULL DEFAULT NOW(),
