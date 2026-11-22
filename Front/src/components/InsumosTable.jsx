@@ -1,4 +1,5 @@
 import { Pencil, Power } from 'lucide-react'
+import { fmtMoneda, fmtStock } from '../utils/formatters.js'
 
 export default function InsumosTable({ insumos, onEditar, onCambiarEstado, cargando }) {
   if (!insumos.length && !cargando) {
@@ -22,16 +23,6 @@ export default function InsumosTable({ insumos, onEditar, onCambiarEstado, carga
       </div>
     )
   }
-
-  const fmtStock = new Intl.NumberFormat('es-MX', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 3,
-  })
-
-  const fmtCosto = new Intl.NumberFormat('es-MX', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 4,
-  })
 
   function nivelStock(ins) {
     const actual = Number(ins.stock_actual || 0)
@@ -179,7 +170,7 @@ export default function InsumosTable({ insumos, onEditar, onCambiarEstado, carga
                         fontSize: 13,
                       }}
                     >
-                      {fmtStock.format(actual)}
+                      {fmtStock(actual, ins.unidad_medida)}
                     </span>
                   </td>
 
@@ -192,7 +183,7 @@ export default function InsumosTable({ insumos, onEditar, onCambiarEstado, carga
                         fontSize: 13,
                       }}
                     >
-                      {fmtStock.format(minimo)}
+                      {fmtStock(minimo, ins.unidad_medida)}
                     </span>
                   </td>
 
@@ -206,7 +197,7 @@ export default function InsumosTable({ insumos, onEditar, onCambiarEstado, carga
                         fontSize: 13,
                       }}
                     >
-                      ${fmtCosto.format(costo)}
+                      {fmtMoneda(costo)}
                     </span>
                   </td>
 

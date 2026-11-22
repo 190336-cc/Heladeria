@@ -6,16 +6,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Plus, Minus, Check, CheckCircle, AlertTriangle, ShoppingCart, Calendar } from 'lucide-react'
 import { productosApi, ventasApi, eventosApi } from '../services/api.js'
+import { fmtMoneda } from '../utils/formatters.js'
 
 const EMOJIS = {
   'Helado de Vainilla': '🍦', 'Helado de Chocolate': '🍫',
   'Helado de Fresa': '🍓', 'Helado de Mango': '🥭',
   'Helado de Limón': '🍋', 'Paleta de Cajeta': '🍮',
   'Sundae Oreo': '🍪', 'Helado de Guanábana': '🌿',
-}
-
-function fmtCur(n) {
-  return `$${Number(n).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
 export default function VentasPage() {
@@ -122,7 +119,7 @@ export default function VentasPage() {
       const resp = await ventasApi.crear(payload)
       const insumosAfectados = resp.venta?.insumos_descontados?.length || 0
       setExito({
-        texto: `Venta #${resp.venta?.id} registrada exitosamente por ${fmtCur(resp.venta?.total || total)}. ${
+        texto: `Venta #${resp.venta?.id} registrada exitosamente por ${fmtMoneda(resp.venta?.total || total)}. ${
           insumosAfectados > 0 ? `Se descontaron automáticamente ${insumosAfectados} insumo(s) del almacén.` : ''
         }`,
       })
@@ -197,10 +194,10 @@ export default function VentasPage() {
                   onMouseEnter={(e) => { e.currentTarget.style.borderColor = '#6B3F1C'; e.currentTarget.style.boxShadow = '0 4px 12px rgba(0,0,0,0.08)' }}
                   onMouseLeave={(e) => { e.currentTarget.style.borderColor = '#e7e5e4'; e.currentTarget.style.boxShadow = '0 1px 3px rgba(0,0,0,0.04)' }}
                 >
-                  <div style={{ fontSize: 32, marginBottom: 8 }}>{EMOJIS[prod.nombre] || '🍦'}</div>
+                  <div style={{ fontSize: 32, marginBottom: 8 }}>{prod.emoji || EMOJIS[prod.nombre] || '🍦'}</div>
                   <p style={{ fontSize: 13, fontWeight: 600, color: '#1c1917', lineHeight: 1.3 }}>{prod.nombre}</p>
                   <p style={{ fontSize: 20, fontFamily: 'var(--font-mono)', fontWeight: 700, color: '#6B3F1C', marginTop: 6 }}>
-                    {fmtCur(prod.precio_venta || prod.precio)}
+                    {fmtMoneda(prod.precio_venta || prod.precio)}
                   </p>
                 </button>
               ))}
@@ -267,7 +264,7 @@ export default function VentasPage() {
                         {prod?.nombre}
                       </p>
                       <p style={{ fontSize: 11, color: '#a8a29e', fontFamily: 'var(--font-mono)' }}>
-                        {fmtCur(precio)} c/u
+                        {fmtMoneda(precio)} c/u
                       </p>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 4 }}>
@@ -292,7 +289,7 @@ export default function VentasPage() {
                       ><Plus size={11} /></button>
                     </div>
                     <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: '#1c1917', width: 60, textAlign: 'right' }}>
-                      {fmtCur(precio * item.cantidad)}
+                      {fmtMoneda(precio * item.cantidad)}
                     </span>
                   </div>
                 )
@@ -304,7 +301,7 @@ export default function VentasPage() {
           <div style={{ borderTop: '1px solid #f5f5f4', paddingTop: 14, display: 'flex', flexDirection: 'column', gap: 10 }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
               <span style={{ fontSize: 13, color: '#78716c' }}>Total a pagar</span>
-              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 22, fontWeight: 700, color: '#6B3F1C' }}>{fmtCur(total)}</span>
+              <span style={{ fontFamily: 'var(--font-mono)', fontSize: 22, fontWeight: 700, color: '#6B3F1C' }}>{fmtMoneda(total)}</span>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3,1fr)', gap: 6 }}>

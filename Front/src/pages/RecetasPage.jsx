@@ -6,16 +6,13 @@
 import { useEffect, useMemo, useState } from 'react'
 import { Plus, Trash2, Save, BookOpen, AlertCircle, CheckCircle } from 'lucide-react'
 import { productosApi, insumosApi, recetasApi } from '../services/api.js'
+import { fmtMoneda, calcularMargen } from '../utils/formatters.js'
 
 const EMOJIS = {
   'Helado de Vainilla': '🍦', 'Helado de Chocolate': '🍫',
   'Helado de Fresa': '🍓', 'Helado de Mango': '🥭',
   'Helado de Limón': '🍋', 'Paleta de Cajeta': '🍮',
   'Sundae Oreo': '🍪', 'Helado de Guanábana': '🌿',
-}
-
-function fmtCur(n) {
-  return `$${Number(n || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
 }
 
 export default function RecetasPage() {
@@ -101,8 +98,7 @@ export default function RecetasPage() {
 
   // Margen de ganancia bruto
   const margenPorcentaje = useMemo(() => {
-    if (precioVenta <= 0) return 0
-    return ((precioVenta - costoTotalEstimado) / precioVenta) * 100
+    return calcularMargen(precioVenta, costoTotalEstimado) ?? 0
   }, [precioVenta, costoTotalEstimado])
 
   const gananciaNetaEstimada = Math.max(0, precioVenta - costoTotalEstimado)
@@ -243,7 +239,7 @@ export default function RecetasPage() {
                   }}
                 >
                   <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
-                    {EMOJIS[p.nombre] || '🍨'} {p.nombre}
+                    {p.emoji || EMOJIS[p.nombre] || '🍨'} {p.nombre}
                   </span>
                 </button>
               )
@@ -265,7 +261,7 @@ export default function RecetasPage() {
                   Receta para porción individual
                 </span>
                 <h3 style={{ fontSize: 20, fontWeight: 700, color: '#1c1917', marginTop: 2, display: 'flex', alignItems: 'center', gap: 8 }}>
-                  <span>{EMOJIS[producto?.nombre || ''] || '🍨'}</span>
+                  <span>{producto?.emoji || EMOJIS[producto?.nombre || ''] || '🍨'}</span>
                   <span>{producto?.nombre}</span>
                 </h3>
               </div>
@@ -275,13 +271,13 @@ export default function RecetasPage() {
                 <div style={{ textAlign: 'right' }}>
                   <p style={{ fontSize: 11, color: '#78716c', fontWeight: 500 }}>Costo insumos</p>
                   <p style={{ fontFamily: 'var(--font-mono)', fontSize: 16, fontWeight: 700, color: '#6B3F1C' }}>
-                    {fmtCur(costoTotalEstimado)}
+                    {fmtMoneda(costoTotalEstimado)}
                   </p>
                 </div>
                 <div style={{ textAlign: 'right', borderLeft: '1px solid #e7e5e4', paddingLeft: 16 }}>
                   <p style={{ fontSize: 11, color: '#78716c', fontWeight: 500 }}>Precio venta</p>
                   <p style={{ fontFamily: 'var(--font-mono)', fontSize: 16, fontWeight: 700, color: '#1c1917' }}>
-                    {fmtCur(precioVenta)}
+                    {fmtMoneda(precioVenta)}
                   </p>
                 </div>
                 <div style={{ textAlign: 'right', borderLeft: '1px solid #e7e5e4', paddingLeft: 16 }}>
@@ -292,7 +288,7 @@ export default function RecetasPage() {
                   }}>
                     {margenPorcentaje.toFixed(1)}%
                     <span style={{ fontSize: 11, color: '#78716c', fontWeight: 400, marginLeft: 4 }}>
-                      ({fmtCur(gananciaNetaEstimada)})
+                      ({fmtMoneda(gananciaNetaEstimada)})
                     </span>
                   </p>
                 </div>
@@ -376,7 +372,7 @@ export default function RecetasPage() {
                           </div>
                         </td>
                         <td style={{ padding: '10px 0', textAlign: 'right', fontFamily: 'var(--font-mono)', fontWeight: 600, color: '#1c1917' }}>
-                          {fmtCur(parcial)}
+                          {fmtMoneda(parcial)}
                         </td>
                         <td style={{ padding: '10px 0', textAlign: 'center' }}>
                           <button
@@ -395,7 +391,7 @@ export default function RecetasPage() {
                       Costo total estimado por porción
                     </td>
                     <td style={{ padding: '10px 0', textAlign: 'right', fontFamily: 'var(--font-mono)', fontWeight: 700, fontSize: 15, color: '#6B3F1C' }}>
-                      {fmtCur(costoTotalEstimado)}
+                      {fmtMoneda(costoTotalEstimado)}
                     </td>
                     <td />
                   </tr>

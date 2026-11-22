@@ -6,20 +6,7 @@
 import { useEffect, useState, useMemo } from 'react'
 import { Plus, Calendar, MapPin, CheckCircle, AlertTriangle } from 'lucide-react'
 import { eventosApi } from '../services/api.js'
-
-function fmtCur(n) {
-  return `$${Number(n).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-}
-
-function fmtFecha(fechaStr) {
-  if (!fechaStr) return ''
-  const d = new Date(fechaStr)
-  return isNaN(d.getTime())
-    ? fechaStr
-    : d.toLocaleDateString('es-MX', {
-        weekday: 'short', year: 'numeric', month: 'short', day: 'numeric',
-      })
-}
+import { fmtMoneda, fmtFecha } from '../utils/formatters.js'
 
 function FieldRow({ label, children, required }) {
   return (
@@ -156,7 +143,7 @@ export default function EventosPage() {
             }}>SISTEMA EN VIVO</span>
           </div>
           <p style={{ fontSize: 13, color: '#78716c' }}>
-            {eventos.length} eventos registrados · {fmtCur(totalVentas)} acumulado en ventas
+            {eventos.length} eventos registrados · {fmtMoneda(totalVentas)} acumulado en ventas
           </p>
         </div>
         <button
@@ -334,7 +321,7 @@ export default function EventosPage() {
                     <div>
                       <p style={{ fontSize: 11, color: '#a8a29e' }}>Ventas generadas</p>
                       <p style={{ fontFamily: 'var(--font-mono)', fontSize: 18, fontWeight: 700, color: ventasTotal > 0 ? '#059669' : '#78716c' }}>
-                        {fmtCur(ventasTotal)}
+                        {fmtMoneda(ventasTotal)}
                       </p>
                     </div>
                     <span style={{ fontSize: 11, color: '#a8a29e' }}>

@@ -1,3 +1,5 @@
+import { fmtMoneda } from '../utils/formatters.js'
+
 export default function InventarioResumen({ resumen, cargando }) {
   if (cargando && !resumen) {
     return (
@@ -18,13 +20,6 @@ export default function InventarioResumen({ resumen, cargando }) {
       </div>
     )
   }
-
-  const fmtMoneda = new Intl.NumberFormat('es-MX', {
-    style: 'currency',
-    currency: 'MXN',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
 
   const cards = [
     {
@@ -49,7 +44,7 @@ export default function InventarioResumen({ resumen, cargando }) {
     },
     {
       etiqueta: 'VALOR ESTIMADO',
-      valor: fmtMoneda.format(Number(resumen?.valor_inventario || 0)),
+      valor: fmtMoneda(resumen?.valor_inventario || 0),
       color: '#1c1917',
       isMono: true,
     },

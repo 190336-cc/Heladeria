@@ -1,5 +1,6 @@
 import { useState, useId } from 'react'
 import { X, Check, Lock, AlertCircle, Info } from 'lucide-react'
+import { fmtStock } from '../utils/formatters.js'
 
 const UNIDADES_VALIDAS = [
   { valor: 'g', etiqueta: 'g (gramos — sólidos: azúcar, cacao, fruta, bases)' },
@@ -350,10 +351,7 @@ export default function InsumoForm({ insumo, onGuardar, onCancelar, cargando }) 
                 disabled
                 value={
                   esEdicion
-                    ? `${Number(insumo.stock_actual).toLocaleString('es-MX', {
-                        minimumFractionDigits: 3,
-                        maximumFractionDigits: 3,
-                      })} ${insumo.unidad_medida}`
+                    ? `${fmtStock(insumo.stock_actual, insumo.unidad_medida, 3)} ${insumo.unidad_medida}`
                     : '0.000 (Inicial)'
                 }
                 style={{

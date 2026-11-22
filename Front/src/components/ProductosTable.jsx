@@ -1,4 +1,5 @@
 import { Pencil, Check, X, BookOpen } from 'lucide-react'
+import { fmtMoneda, calcularMargen } from '../utils/formatters.js'
 
 export default function ProductosTable({
   productos,
@@ -28,13 +29,6 @@ export default function ProductosTable({
     )
   }
 
-  const fmtMoneda = new Intl.NumberFormat('es-MX', {
-    style: 'currency',
-    currency: 'MXN',
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 2,
-  })
-
   return (
     <div
       style={{
@@ -46,7 +40,7 @@ export default function ProductosTable({
       {productos.map((prod) => {
         const precio = Number(prod.precio_venta ?? prod.precio ?? 0)
         const costoReceta = Number(prod.costo_receta_estimado ?? 0)
-        const margen = precio > 0 && costoReceta > 0 ? ((precio - costoReceta) / precio) * 100 : null
+        const margen = calcularMargen(precio, costoReceta)
         const esActivo = prod.activo === true || prod.estado === 'activo'
         const emoji = prod.emoji || '🍦'
         const categoria = prod.categoria || 'Helados'
@@ -158,7 +152,7 @@ export default function ProductosTable({
                   marginTop: 2,
                 }}
               >
-                {fmtMoneda.format(precio)}
+                {fmtMoneda(precio)}
               </div>
 
               {/* Indicador de Receta y Margen */}
@@ -198,7 +192,7 @@ export default function ProductosTable({
                       fontSize: 11,
                     }}
                   >
-                    <span>Costo: {fmtMoneda.format(costoReceta)}</span>
+                    <span>Costo: {fmtMoneda(costoReceta)}</span>
                     <span
                       style={{
                         fontWeight: 700,

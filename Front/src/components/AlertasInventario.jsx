@@ -1,14 +1,10 @@
 import { AlertTriangle, CheckCircle2 } from 'lucide-react'
+import { fmtStock } from '../utils/formatters.js'
 
 export default function AlertasInventario({ alertas, cargando }) {
   if (cargando && !alertas) {
     return null
   }
-
-  const fmtStock = new Intl.NumberFormat('es-MX', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 3,
-  })
 
   const listaAlertas = Array.isArray(alertas) ? alertas : []
 
@@ -103,7 +99,7 @@ export default function AlertasInventario({ alertas, cargando }) {
                       marginTop: 2,
                     }}
                   >
-                    {fmtStock.format(Number(a.stock_actual || 0))} / {fmtStock.format(Number(a.stock_minimo || 0))} {a.unidad_medida}
+                    {fmtStock(a.stock_actual, a.unidad_medida)} / {fmtStock(a.stock_minimo, a.unidad_medida)} {a.unidad_medida}
                   </span>
                 </div>
 

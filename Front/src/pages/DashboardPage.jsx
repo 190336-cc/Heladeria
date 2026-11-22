@@ -11,10 +11,7 @@ import {
   ResponsiveContainer,
 } from 'recharts'
 import { dashboardApi } from '../services/api.js'
-
-function fmtCur(n) {
-  return `$${Number(n || 0).toLocaleString('es-MX', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}`
-}
+import { fmtMoneda } from '../utils/formatters.js'
 
 function KpiCard({ label, value, sub, accentColor, icon: Icon }) {
   return (
@@ -109,14 +106,14 @@ export default function DashboardPage() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill,minmax(210px,1fr))', gap: 14 }}>
           <KpiCard
             label="Ventas últimos 7 días"
-            value={fmtCur(kpis.total_ventas_semana)}
+            value={fmtMoneda(kpis.total_ventas_semana)}
             sub={`${kpis.transacciones_semana || 0} tickets registrados`}
             accentColor="#6B3F1C"
             icon={TrendingUp}
           />
           <KpiCard
             label="Valor del inventario"
-            value={fmtCur(kpis.valor_inventario)}
+            value={fmtMoneda(kpis.valor_inventario)}
             sub={`${kpis.total_insumos || 0} insumos registrados`}
             icon={Package}
           />
@@ -154,7 +151,7 @@ export default function DashboardPage() {
                   <XAxis dataKey="dia" tick={{ fontSize: 11, fill: '#8B6A54' }} axisLine={false} tickLine={false} />
                   <YAxis tick={{ fontSize: 11, fill: '#8B6A54' }} axisLine={false} tickLine={false}
                     tickFormatter={(v) => `$${v}`} />
-                  <Tooltip formatter={(v) => [fmtCur(v), 'Ventas']}
+                  <Tooltip formatter={(v) => [fmtMoneda(v), 'Ventas']}
                     contentStyle={{ borderRadius: 8, border: '1px solid #F0EAE0', fontSize: 12 }} />
                   <Line type="monotone" dataKey="ventas" stroke="#E8A44A" strokeWidth={2.5}
                     dot={{ fill: '#E8A44A', r: 3 }} activeDot={{ r: 5 }} />
@@ -240,7 +237,7 @@ export default function DashboardPage() {
                       <p style={{ fontSize: 11, color: '#a8a29e' }}>{ev.fecha} · {ev.ubicacion}</p>
                     </div>
                     {ev.ventas > 0
-                      ? <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: '#059669', whiteSpace: 'nowrap' }}>{fmtCur(ev.ventas)}</span>
+                      ? <span style={{ fontFamily: 'var(--font-mono)', fontSize: 13, fontWeight: 600, color: '#059669', whiteSpace: 'nowrap' }}>{fmtMoneda(ev.ventas)}</span>
                       : <span style={{ fontSize: 11, color: '#a8a29e', background: '#f5f5f4', padding: '2px 8px', borderRadius: 4 }}>{ev.estado || 'Programado'}</span>
                     }
                   </div>

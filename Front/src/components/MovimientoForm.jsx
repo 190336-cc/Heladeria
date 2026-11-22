@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { Check, Info, AlertTriangle } from 'lucide-react'
 import Alerta from './Alerta.jsx'
+import { fmtStock } from '../utils/formatters.js'
 
 const TIPOS_MOVIMIENTO = [
   {
@@ -47,11 +48,6 @@ export default function MovimientoForm({ insumos, onRegistrar, cargando }) {
   const insumoSeleccionado = insumosActivos.find((i) => String(i.id) === String(campos.insumo_id))
   const tipoSeleccionado = TIPOS_MOVIMIENTO.find((t) => t.valor === campos.tipo) || TIPOS_MOVIMIENTO[0]
 
-  const fmtStock = new Intl.NumberFormat('es-MX', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 3,
-  })
-
   // Validación de stock insuficiente para mermas o ajustes de salida
   const stockInsuficiente =
     insumoSeleccionado &&
@@ -88,7 +84,7 @@ export default function MovimientoForm({ insumos, onRegistrar, cargando }) {
 
     if (stockInsuficiente) {
       setError(
-        `Stock insuficiente: Intentas descontar ${cantidadNum} ${insumoSeleccionado.unidad_medida}, pero solo hay ${fmtStock.format(Number(insumoSeleccionado.stock_actual))} ${insumoSeleccionado.unidad_medida} en existencia.`
+        `Stock insuficiente: Intentas descontar ${cantidadNum} ${insumoSeleccionado.unidad_medida}, pero solo hay ${fmtStock(insumoSeleccionado.stock_actual, insumoSeleccionado.unidad_medida)} ${insumoSeleccionado.unidad_medida} en existencia.`
       )
       return
     }
@@ -211,7 +207,7 @@ export default function MovimientoForm({ insumos, onRegistrar, cargando }) {
             <option value="">Selecciona un insumo...</option>
             {insumosActivos.map((i) => (
               <option key={i.id} value={i.id}>
-                {i.nombre} — Stock: {fmtStock.format(Number(i.stock_actual || 0))} {i.unidad_medida}
+                {i.nombre} — Stock: {fmtStock(i.stock_actual, i.unidad_medida)} {i.unidad_medida}
               </option>
             ))}
           </select>
@@ -226,8 +222,8 @@ export default function MovimientoForm({ insumos, onRegistrar, cargando }) {
                 fontFamily: 'var(--font-mono)',
               }}
             >
-              <span>Existencia: {fmtStock.format(Number(insumoSeleccionado.stock_actual || 0))} {insumoSeleccionado.unidad_medida}</span>
-              <span>Mínimo: {fmtStock.format(Number(insumoSeleccionado.stock_minimo || 0))} {insumoSeleccionado.unidad_medida}</span>
+              <span>Existencia: {fmtStock(insumoSeleccionado.stock_actual, insumoSeleccionado.unidad_medida)} {insumoSeleccionado.unidad_medida}</span>
+              <span>Mínimo: {fmtStock(insumoSeleccionado.stock_minimo, insumoSeleccionado.unidad_medida)} {insumoSeleccionado.unidad_medida}</span>
             </div>
           )}
         </div>
@@ -265,7 +261,7 @@ export default function MovimientoForm({ insumos, onRegistrar, cargando }) {
               }}
             >
               <AlertTriangle size={13} />
-              <span>Supera el stock actual disponible ({fmtStock.format(Number(insumoSeleccionado.stock_actual))} {insumoSeleccionado.unidad_medida}). El servidor rechazará la operación.</span>
+              <span>Supera el stock actual disponible ({fmtStock(insumoSeleccionado.stock_actual, insumoSeleccionado.unidad_medida)} {insumoSeleccionado.unidad_medida}). El servidor rechazará la operación.</span>
             </div>
           )}
         </div>

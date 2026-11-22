@@ -1,3 +1,5 @@
+import { fmtStock, fmtFechaHora } from '../utils/formatters.js'
+
 export default function MovimientosTable({ movimientos, cargando }) {
   if (cargando && (!movimientos || movimientos.length === 0)) {
     return (
@@ -14,24 +16,6 @@ export default function MovimientosTable({ movimientos, cargando }) {
         <p style={{ fontSize: 13, margin: 0 }}>Cargando historial de movimientos...</p>
       </div>
     )
-  }
-
-  const fmtNum = new Intl.NumberFormat('es-MX', {
-    minimumFractionDigits: 2,
-    maximumFractionDigits: 3,
-  })
-
-  function fmtFecha(fechaStr) {
-    if (!fechaStr) return '—'
-    const d = new Date(fechaStr)
-    if (isNaN(d.getTime())) return fechaStr
-    return d.toLocaleString('es-MX', {
-      year: 'numeric',
-      month: '2-digit',
-      day: '2-digit',
-      hour: '2-digit',
-      minute: '2-digit',
-    })
   }
 
   const TIPO_CONFIG = {
@@ -188,7 +172,7 @@ export default function MovimientosTable({ movimientos, cargando }) {
                       color: '#78716c',
                     }}
                   >
-                    {m.usuario || 'Sistema'} · {fmtFecha(m.created_at)}
+                    {m.usuario || 'Sistema'} · {fmtFechaHora(m.created_at)}
                   </p>
 
                   {m.motivo && (
@@ -226,7 +210,7 @@ export default function MovimientosTable({ movimientos, cargando }) {
                     }}
                   >
                     {conf.signo}
-                    {fmtNum.format(Number(m.cantidad || 0))} {m.unidad_medida || ''}
+                    {fmtStock(m.cantidad, m.unidad_medida)} {m.unidad_medida || ''}
                   </span>
 
                   <span
